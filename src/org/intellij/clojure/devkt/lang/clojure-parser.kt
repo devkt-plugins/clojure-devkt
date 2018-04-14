@@ -24,7 +24,7 @@ import org.intellij.clojure.devkt.psi.ClojureTypes.*
 import org.intellij.clojure.devkt.util.wsOrComment
 import org.jetbrains.kotlin.com.intellij.lang.*
 import org.jetbrains.kotlin.com.intellij.lang.parser.GeneratedParserUtilBase
-import org.jetbrains.kotlin.com.intellij.lexer.FlexAdapter
+import org.jetbrains.kotlin.com.intellij.lexer.*
 import org.jetbrains.kotlin.com.intellij.openapi.project.Project
 import org.jetbrains.kotlin.com.intellij.psi.FileViewProvider
 import org.jetbrains.kotlin.com.intellij.psi.tree.IElementType
@@ -37,6 +37,69 @@ class ClojureLexer(language: Language) : FlexAdapter(_ClojureLexer(language))
 
 object ClojureParserDefinition : ClojureParserDefinitionBase() {
 	override fun getFileNodeType() = ClojureTokens.CLJ_FILE_TYPE
+}
+
+class ClojureHighlightingLexer(language: Language) : LookAheadLexer(ClojureLexer(language)) {
+	companion object {
+		val CALLABLE = IElementType("C_CALLABLE*", ClojureLanguage)
+		val KEYWORD = IElementType("C_KEYWORD*", ClojureLanguage)
+		val CALLABLE_KEYWORD = IElementType("C_CALLABLE_KEYWORD*", ClojureLanguage)
+		val QUOTED_SYM = IElementType("C_QUOTED_SYM*", ClojureLanguage)
+	}
+
+	override fun lookAhead(baseLexer: Lexer) {
+		fun skipWs(l: Lexer) {
+			while (l.tokenType.let {
+						ClojureTokens.WHITESPACES.contains(it) ||
+								ClojureTokens.COMMENTS.contains(it)
+					}) advanceLexer(l)
+		}
+
+		val tokenType0 = baseLexer.tokenType
+
+		when (tokenType0) {
+			C_SHARP -> {
+				baseLexer.advance()
+				when (baseLexer.tokenType) {
+					C_STRING, C_PAREN1, C_BRACE1 -> advanceAs(baseLexer, baseLexer.tokenType)
+					else -> addToken(baseLexer.tokenStart, C_SHARP)
+				}
+			}
+			C_QUOTE -> {
+				advanceAs(baseLexer, tokenType0)
+				skipWs(baseLexer)
+				if (baseLexer.tokenType === C_SYM) advanceSymbolAs(baseLexer, QUOTED_SYM)
+				else advanceLexer(baseLexer)
+			}
+			C_COLON, C_COLONCOLON -> {
+				advanceAs(baseLexer, tokenType0)
+				if (baseLexer.tokenType === C_SYM) {
+					advanceAs(baseLexer, KEYWORD)
+					if (baseLexer.tokenType === C_SLASH) advanceAs(baseLexer, KEYWORD)
+					if (baseLexer.tokenType === C_SYM) advanceAs(baseLexer, KEYWORD)
+				}
+			}
+			C_PAREN1 -> {
+				advanceAs(baseLexer, tokenType0)
+				skipWs(baseLexer)
+				val callableType = if (baseLexer.tokenType.let { it == C_COLON || it == C_COLONCOLON }) CALLABLE_KEYWORD else CALLABLE
+				advanceSymbolAs(baseLexer, callableType)
+			}
+			else -> super.lookAhead(baseLexer)
+		}
+	}
+
+	private fun advanceSymbolAs(baseLexer: Lexer, type: IElementType) {
+		w@ while (true) {
+			val tokenType = baseLexer.tokenType
+			when (tokenType) {
+				C_DOT, C_DOTDASH -> advanceAs(baseLexer, tokenType)
+				C_SLASH, C_SYM -> advanceAs(baseLexer, type)
+				C_COLON, C_COLONCOLON -> advanceAs(baseLexer, type)
+				else -> break@w
+			}
+		}
+	}
 }
 
 abstract class ClojureParserDefinitionBase : ParserDefinition {

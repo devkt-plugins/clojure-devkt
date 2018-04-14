@@ -5,6 +5,8 @@ import org.intellij.clojure.devkt.lang.*
 import org.intellij.clojure.devkt.psi.*
 import org.intellij.clojure.devkt.psi.ClojureTypes.*
 import org.intellij.clojure.devkt.util.*
+import org.jetbrains.kotlin.com.intellij.lexer.Lexer
+import org.jetbrains.kotlin.com.intellij.openapi.project.Project
 import org.jetbrains.kotlin.com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.com.intellij.psi.PsiErrorElement
 import org.jetbrains.kotlin.com.intellij.psi.tree.IElementType
@@ -18,6 +20,10 @@ class Clojure<TextAttributes> : ExtendedDevKtLanguage<TextAttributes>(
 			fileName.endsWith(".clj") ||
 			fileName.endsWith(".cljs") ||
 			fileName.endsWith(".cljc")
+
+	override fun createLexer(project: Project): Lexer {
+		return ClojureHighlightingLexer(ClojureLanguage)
+	}
 
 	/**
 	 * @param type IElementType
@@ -41,16 +47,16 @@ class Clojure<TextAttributes> : ExtendedDevKtLanguage<TextAttributes>(
 		C_QUOTE -> colorScheme.string
 		C_TILDE, C_TILDE_AT -> colorScheme.operators
 		C_AT -> colorScheme.operators
-	// C_HAT, C_SHARP_HAT -> colorScheme.metadata
-	// C_SHARP, C_SHARP_COMMENT, C_SHARP_EQ, C_SHARP_NS -> pack(ClojureColors.READER_MACRO)
-	// C_SHARP_QMARK, C_SHARP_QMARK_AT, C_SHARP_QUOTE -> pack(ClojureColors.READER_MACRO)
+		C_HAT, C_SHARP_HAT -> colorScheme.metaData
+		C_SHARP, C_SHARP_COMMENT, C_SHARP_EQ, C_SHARP_NS -> colorScheme.macro
+		C_SHARP_QMARK, C_SHARP_QMARK_AT, C_SHARP_QUOTE -> colorScheme.macro
 		C_PAREN1, C_PAREN2 -> colorScheme.parentheses
 		C_BRACE1, C_BRACE2 -> colorScheme.braces
 		C_BRACKET1, C_BRACKET2 -> colorScheme.brackets
-	// ClojureHighlightingLexer.CALLABLE -> pack(ClojureColors.CALLABLE)
-		C_KEYWORD -> colorScheme.keywords
-	// ClojureHighlightingLexer.CALLABLE_KEYWORD -> pack(ClojureColors.CALLABLE, ClojureColors.KEYWORD)
-	// ClojureHighlightingLexer.QUOTED_SYM -> pack(ClojureColors.QUOTED_SYM)
+		ClojureHighlightingLexer.CALLABLE -> colorScheme.keywords
+		ClojureHighlightingLexer.KEYWORD -> colorScheme.keywords
+		ClojureHighlightingLexer.CALLABLE_KEYWORD -> colorScheme.keywords
+		ClojureHighlightingLexer.QUOTED_SYM -> colorScheme.string
 		else -> null
 	}
 
@@ -69,11 +75,8 @@ class Clojure<TextAttributes> : ExtendedDevKtLanguage<TextAttributes>(
 		if (callable) document.highlight(element.valueRange, colorScheme.keywords)
 		when (element) {
 			is PsiErrorElement -> document.highlight(element, colorScheme.unknown)
-			is CMetadata -> {
-				element.firstForm.let {
-					/// if (it is CSymbol) document.highlight(it, null)
-					// TODO metadata
-				}
+			is CMetadata -> element.firstForm.let {
+				if (it is CSymbol) document.highlight(it, colorScheme.metaData)
 			}
 		}
 		if (element is CForm && element.iterate(CReaderMacro::class)
