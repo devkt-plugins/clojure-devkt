@@ -27,7 +27,6 @@ import org.jetbrains.kotlin.com.intellij.lang.parser.GeneratedParserUtilBase
 import org.jetbrains.kotlin.com.intellij.lexer.FlexAdapter
 import org.jetbrains.kotlin.com.intellij.openapi.project.Project
 import org.jetbrains.kotlin.com.intellij.psi.FileViewProvider
-import org.jetbrains.kotlin.com.intellij.psi.impl.source.tree.CompositeElement
 import org.jetbrains.kotlin.com.intellij.psi.tree.IElementType
 import org.jetbrains.kotlin.com.intellij.psi.tree.TokenSet
 
@@ -82,16 +81,9 @@ class ClojureParserUtil {
 
 		@JvmStatic
 		fun nospace(b: PsiBuilder, l: Int): Boolean {
-			if (space(b, l)) {
-				b.mark().apply { b.tokenType; error("no <whitespace> allowed") }
-						.setCustomEdgeTokenBinders(WhitespacesBinders.GREEDY_LEFT_BINDER, WhitespacesBinders.GREEDY_RIGHT_BINDER)
-			}
+			if (space(b, l)) b.mark().apply { b.tokenType; error("no <whitespace> allowed") }
+					.setCustomEdgeTokenBinders(WhitespacesBinders.GREEDY_LEFT_BINDER, WhitespacesBinders.GREEDY_RIGHT_BINDER)
 			return true
-		}
-
-		@JvmStatic
-		fun space(b: PsiBuilder, l: Int): Boolean {
-			return b.rawLookup(0).wsOrComment() || b.rawLookup(-1).wsOrComment()
 		}
 
 		private val RECOVER_SET = TokenSet.orSet(
@@ -99,9 +91,10 @@ class ClojureParserUtil {
 				TokenSet.create(C_DOT, C_DOTDASH))
 
 		@JvmStatic
-		fun formRecover(b: PsiBuilder, l: Int): Boolean {
-			return !RECOVER_SET.contains(b.tokenType)
-		}
+		fun space(b: PsiBuilder, l: Int) = b.rawLookup(0).wsOrComment() or b.rawLookup(-1).wsOrComment()
+
+		@JvmStatic
+		fun formRecover(b: PsiBuilder, l: Int) = b.tokenType !in RECOVER_SET
 
 		@JvmStatic
 		fun rootFormRecover(b: PsiBuilder, l: Int): Boolean {
