@@ -6,6 +6,7 @@ import org.intellij.clojure.devkt.psi.*
 import org.intellij.clojure.devkt.psi.ClojureTypes.*
 import org.intellij.clojure.devkt.util.*
 import org.jetbrains.kotlin.com.intellij.psi.PsiElement
+import org.jetbrains.kotlin.com.intellij.psi.PsiErrorElement
 import org.jetbrains.kotlin.com.intellij.psi.tree.IElementType
 
 class Clojure<TextAttributes> : ExtendedDevKtLanguage<TextAttributes>(
@@ -67,6 +68,7 @@ class Clojure<TextAttributes> : ExtendedDevKtLanguage<TextAttributes>(
 		}
 		if (callable) document.highlight(element.valueRange, colorScheme.keywords)
 		when (element) {
+			is PsiErrorElement -> document.highlight(element, colorScheme.unknown)
 			is CMetadata -> {
 				element.firstForm.let {
 					/// if (it is CSymbol) document.highlight(it, null)
