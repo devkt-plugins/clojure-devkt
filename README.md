@@ -1,9 +1,11 @@
-# plugin-template
+# Clojure-Kit DevKt
 
-This is the template of the plugin project.
+This is the devkt version of [Clojure-Kit](https://github.com/gregsh/Clojure-Kit).
 
-Things to change before coding:
+# Build
 
-+ `your-language-devkt` in [settings.gradle.kts](settings.gradle.kts)
-+ `your.package.name` in [build.gradle.kts](build.gradle.kts)
+```
+$ gradlew jar
+```
+
 
