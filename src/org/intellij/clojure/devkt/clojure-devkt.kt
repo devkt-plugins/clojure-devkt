@@ -37,8 +37,8 @@ class Clojure<TextAttributes> : ExtendedDevKtLanguage<TextAttributes>(
 		C_NUMBER, C_HEXNUM, C_RDXNUM, C_RATIO -> colorScheme.numbers
 		C_BOOL -> colorScheme.keywords
 		C_NIL -> colorScheme.keywords
-		C_DOT, C_DOTDASH -> colorScheme.keywords
-		C_COLONCOLON -> colorScheme.keywords
+		C_DOT, C_DOTDASH -> colorScheme.colon
+		C_COLONCOLON -> colorScheme.colon
 		C_COLON -> colorScheme.colon
 		C_SYM -> colorScheme.identifiers
 		C_COMMA -> colorScheme.comma
@@ -55,8 +55,8 @@ class Clojure<TextAttributes> : ExtendedDevKtLanguage<TextAttributes>(
 		C_BRACKET1, C_BRACKET2 -> colorScheme.brackets
 		ClojureHighlightingLexer.CALLABLE -> colorScheme.keywords
 		ClojureHighlightingLexer.KEYWORD -> colorScheme.keywords
-		ClojureHighlightingLexer.CALLABLE_KEYWORD -> colorScheme.keywords
-		ClojureHighlightingLexer.QUOTED_SYM -> colorScheme.string
+		ClojureHighlightingLexer.CALLABLE_KEYWORD -> colorScheme.annotations
+		ClojureHighlightingLexer.QUOTED_SYM -> colorScheme.macro
 		else -> null
 	}
 

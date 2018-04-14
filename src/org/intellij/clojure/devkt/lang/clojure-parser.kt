@@ -61,7 +61,9 @@ class ClojureHighlightingLexer(language: Language) : LookAheadLexer(ClojureLexer
 			C_SHARP -> {
 				baseLexer.advance()
 				when (baseLexer.tokenType) {
-					C_STRING, C_PAREN1, C_BRACE1 -> advanceAs(baseLexer, baseLexer.tokenType)
+					C_STRING,
+					C_PAREN1,
+					C_BRACE1 -> advanceAs(baseLexer, baseLexer.tokenType)
 					else -> addToken(baseLexer.tokenStart, C_SHARP)
 				}
 			}
@@ -71,7 +73,8 @@ class ClojureHighlightingLexer(language: Language) : LookAheadLexer(ClojureLexer
 				if (baseLexer.tokenType === C_SYM) advanceSymbolAs(baseLexer, QUOTED_SYM)
 				else advanceLexer(baseLexer)
 			}
-			C_COLON, C_COLONCOLON -> {
+			C_COLON,
+			C_COLONCOLON -> {
 				advanceAs(baseLexer, tokenType0)
 				if (baseLexer.tokenType === C_SYM) {
 					advanceAs(baseLexer, KEYWORD)
@@ -82,7 +85,10 @@ class ClojureHighlightingLexer(language: Language) : LookAheadLexer(ClojureLexer
 			C_PAREN1 -> {
 				advanceAs(baseLexer, tokenType0)
 				skipWs(baseLexer)
-				val callableType = if (baseLexer.tokenType.let { it == C_COLON || it == C_COLONCOLON }) CALLABLE_KEYWORD else CALLABLE
+				val callableType = when {
+					baseLexer.tokenType.let { it == C_COLON || it == C_COLONCOLON } -> CALLABLE_KEYWORD
+					else -> CALLABLE
+				}
 				advanceSymbolAs(baseLexer, callableType)
 			}
 			else -> super.lookAhead(baseLexer)
