@@ -46,6 +46,10 @@ class Clojure<TextAttributes> : ExtendedDevKtLanguage<TextAttributes>(
 		C_PAREN1, C_PAREN2 -> colorScheme.parentheses
 		C_BRACE1, C_BRACE2 -> colorScheme.braces
 		C_BRACKET1, C_BRACKET2 -> colorScheme.brackets
+	// ClojureHighlightingLexer.CALLABLE -> pack(ClojureColors.CALLABLE)
+		C_KEYWORD -> colorScheme.keywords
+	// ClojureHighlightingLexer.CALLABLE_KEYWORD -> pack(ClojureColors.CALLABLE, ClojureColors.KEYWORD)
+	// ClojureHighlightingLexer.QUOTED_SYM -> pack(ClojureColors.QUOTED_SYM)
 		else -> null
 	}
 

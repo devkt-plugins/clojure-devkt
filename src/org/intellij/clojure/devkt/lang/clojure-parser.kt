@@ -81,8 +81,10 @@ class ClojureParserUtil {
 
 		@JvmStatic
 		fun nospace(b: PsiBuilder, l: Int): Boolean {
-			if (space(b, l)) b.mark().apply { b.tokenType; error("no <whitespace> allowed") }
-					.setCustomEdgeTokenBinders(WhitespacesBinders.GREEDY_LEFT_BINDER, WhitespacesBinders.GREEDY_RIGHT_BINDER)
+			if (space(b, l)) {
+				b.mark().apply { b.tokenType; error("no <whitespace> allowed") }
+						.setCustomEdgeTokenBinders(WhitespacesBinders.GREEDY_LEFT_BINDER, WhitespacesBinders.GREEDY_RIGHT_BINDER)
+			}
 			return true
 		}
 
